@@ -6,3 +6,8 @@ sky:
     database: sky_take_out
     username: root
     password: superuser
+  alioss:
+    endpoint: oss-cn-hangzhou.aliyuncs.com
+    access-key-id: LTAI5t7sicahH6ZEe3ncEnnb
+    access-key-secret: w1JHZeUewAsxFdpoQnt7CTYPsSuDoo
+    bucket-name: nidhogg-web-tlias
