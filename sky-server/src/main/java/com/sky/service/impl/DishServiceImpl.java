@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -136,5 +137,14 @@ public class DishServiceImpl implements com.sky.service.DishService {
 
         return dishVOList;
     }
+
+    @Override
+    public void startOrStop(Integer status, Long id) {
+       Dish dish=new Dish();
+       dish.setId(id);
+       dish.setStatus(status);
+       dishMapper.update(dish);
+    }
+
 
 }
