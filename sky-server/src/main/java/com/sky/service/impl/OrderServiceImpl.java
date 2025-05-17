@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -18,6 +19,8 @@ import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
+import com.sky.websocket.WebSocketServer;
+import io.swagger.util.Json;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +32,9 @@ import org.springframework.util.CollectionUtils;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,6 +54,9 @@ public class OrderServiceImpl implements OrderService {
     private WeChatPayUtil weChatPayUtil;
 
     public static  Long orderId;
+    @Autowired
+    private WebSocketServer webSocketServer;
+
     @Override
     @Transactional
     public OrderSubmitVO submitOrder(OrdersSubmitDTO ordersSubmitDTO) {
@@ -469,6 +477,13 @@ public class OrderServiceImpl implements OrderService {
         String orderNumber=ordersPaymentDTO.getOrderNumber();
 
         orderMapper.updateStatus(OrderStatus, OrderPaidStatus, check_out_time, orderNumber);
+
+        Map map=new HashMap();
+        map.put("type",1);
+        map.put("orderId",orderId);
+        map.put("content","订单号:"+orderNumber);
+        String json= JSON.toJSONString(map);
+        webSocketServer.sendToAllClient(json);
         return vo;
     }
     /**
@@ -490,7 +505,28 @@ public class OrderServiceImpl implements OrderService {
                 .build();
 
         orderMapper.update(orders);
+
+        Map map=new HashMap();
+        map.put("type",1);
+        map.put("orderId",orders.getId());
+        map.put("content","订单号:"+outTradeNo);
+        String json= JSON.toJSONString(map);
+        webSocketServer.sendToAllClient(json);
     }
 
+    @Override
+    public void reminder(Long id) {
+        Orders ordersDB = orderMapper.getById(id);
 
+        if(ordersDB == null ) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        Map map=new HashMap();
+        map.put("type",2);
+        map.put("orderId",id);
+        map.put("content","订单号:"+ordersDB.getNumber());
+        String json= JSON.toJSONString(map);
+        webSocketServer.sendToAllClient(json);
+    }
 }

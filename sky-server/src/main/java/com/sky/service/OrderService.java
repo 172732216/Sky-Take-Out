@@ -89,4 +89,5 @@ public interface OrderService {
     void paySuccess(String outTradeNo);
 
 
+    void reminder(Long id);
 }
